@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitação de Serviço — Ferreira Costa</title>
+
+<style>
+  /* ============================================================
+     TEMA — identidade visual Ferreira Costa (claro)
+     Vermelho (logo) · Amarelo (ação) · Azul-escuro (labels)
+     ============================================================ */
+  :root{
+    --bg:           #eef1f4;   /* fundo geral claro */
+    --surface:      #ffffff;   /* cartão branco */
+    --surface-2:    #ffffff;   /* inputs */
+    --field-bg:     #ffffff;
+    --border:       #d8dee6;   /* bordas neutras */
+    --border-focus: #1f3a93;   /* azul foco */
+    --text:         #1b2430;   /* texto principal */
+    --text-dim:     #6b7682;   /* texto secundário */
+    --label:        #15294d;   /* azul-escuro dos rótulos */
+    --brand-red:    #e30613;   /* vermelho Ferreira Costa */
+    --brand-yellow: #ffc20e;   /* amarelo botão */
+    --brand-yellow-hover:#f0b400;
+    --accent:       #1f3a93;   /* azul institucional */
+    --accent-soft:  #1f3a9318;
+    --ok:           #2ea043;
+    --danger:       #e30613;
+    --radius:       14px;
+    --radius-sm:    8px;
+    --shadow:       0 18px 50px rgba(20,40,80,.12);
+    --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px;
+  }
+
+  .card{
+    width:100%;
+    max-width:560px;
+    background:var(--surface);
+    border:1px solid #e8ebef;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  /* ---- Cabeçalho com logo ---- */
+  .card__head{
+    padding:30px 32px 22px;
+    text-align:center;
+    border-bottom:1px solid #eef1f4;
+  }
+  .brand{ margin-bottom:18px; }
+  .brand img{ height:72px; width:auto; }
+
+  .card__head h1{
+    font-size:20px; font-weight:700;
+    color:var(--label);
+    letter-spacing:.2px;
+  }
+  .card__head p{ color:var(--text-dim); font-size:13px; margin-top:6px; }
+
+  form{ padding:26px 32px 30px; }
+
+  .field{ margin-bottom:18px; position:relative; }
+  .field label{
+    display:block;
+    font-size:14px; font-weight:700;
+    color:var(--label); margin-bottom:8px;
+  }
+  .field label .req{ color:var(--brand-red); margin-left:3px; }
+
+  /* ---- Inputs nativos ---- */
+  input[type="text"], input[type="number"], textarea{
+    width:100%;
+    background:var(--field-bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    color:var(--text);
+    font-family:var(--font);
+    font-size:14px;
+    padding:12px 13px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input::placeholder, textarea::placeholder{ color:#9aa4af; }
+  input:focus, textarea:focus{
+    outline:none;
+    border-color:var(--border-focus);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  textarea{ resize:vertical; min-height:96px; line-height:1.5; }
+
+  /* ============================================================
+     LISTA FLUTUANTE (dropdown com busca)
+     ============================================================ */
+  .select{ position:relative; }
+  .select__control{
+    width:100%;
+    background:var(--field-bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    color:var(--text);
+    font-size:14px;
+    padding:12px 38px 12px 13px;
+    text-align:left;
+    cursor:pointer;
+    position:relative;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .select__control:focus, .select.is-open .select__control{
+    outline:none;
+    border-color:var(--border-focus);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .select__control[data-empty="true"]{ color:#9aa4af; }
+  .select__control:disabled{ opacity:.55; cursor:not-allowed; background:#f3f5f8; }
+  .select__control::after{
+    content:""; position:absolute;
+    right:14px; top:50%;
+    width:8px; height:8px;
+    border-right:2px solid var(--text-dim);
+    border-bottom:2px solid var(--text-dim);
+    transform:translateY(-65%) rotate(45deg);
+    transition:transform .18s;
+  }
+  .select.is-open .select__control::after{ transform:translateY(-35%) rotate(225deg); }
+
+  .select__menu{
+    position:absolute; z-index:50;
+    top:calc(100% + 6px); left:0; right:0;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    box-shadow:var(--shadow);
+    max-height:240px;
+    display:none; flex-direction:column;
+    overflow:hidden;
+  }
+  .select.is-open .select__menu{ display:flex; }
+  .select__search{
+    width:100%;
+    background:#f7f9fb;
+    border:none; border-bottom:1px solid var(--border);
+    color:var(--text); font-size:13px;
+    padding:11px 13px;
+  }
+  .select__search:focus{ outline:none; }
+  .select__options{ overflow-y:auto; }
+  .select__option{ padding:11px 13px; font-size:14px; cursor:pointer; color:var(--text); }
+  .select__option:hover, .select__option.is-active{
+    background:var(--accent-soft); color:var(--accent);
+  }
+  .select__empty{ padding:12px 13px; color:var(--text-dim); font-size:13px; }
+
+  /* ============================================================
+     UPLOAD DE IMAGEM
+     ============================================================ */
+  .upload{ position:relative; }
+  .upload input[type="file"]{ display:none; }
+  .upload__btn{
+    display:flex; align-items:center; gap:10px;
+    width:100%;
+    background:#f7f9fb;
+    border:1px dashed var(--border);
+    border-radius:var(--radius-sm);
+    color:var(--text-dim);
+    font-size:14px;
+    padding:13px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  .upload__btn:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:var(--accent-soft);
+  }
+  .upload__btn svg{ flex:0 0 auto; }
+  .upload__preview{
+    display:none;
+    margin-top:10px;
+    align-items:center; gap:12px;
+  }
+  .upload__preview img{
+    width:54px; height:54px;
+    object-fit:cover;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border);
+  }
+  .upload__preview .nome{ font-size:13px; color:var(--text); word-break:break-all; }
+  .upload__remove{
+    margin-left:auto;
+    background:transparent; border:none;
+    color:var(--danger); font-size:13px;
+    cursor:pointer; font-weight:700;
+  }
+
+  /* ---- Erro por campo ---- */
+  .error-msg{ display:none; color:var(--danger); font-size:12px; margin-top:6px; }
+  .field.has-error .select__control,
+  .field.has-error input,
+  .field.has-error textarea{ border-color:var(--danger); }
+  .field.has-error .error-msg{ display:block; }
+
+  /* ---- Botões ---- */
+  .actions{ margin-top:24px; display:flex; gap:12px; }
+  .btn{
+    flex:1; border:none;
+    border-radius:var(--radius-sm);
+    font-size:15px; font-weight:700;
+    padding:14px; cursor:pointer;
+    transition:background .15s, transform .05s;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn--primary{ background:var(--brand-yellow); color:#1b2430; }
+  .btn--primary:hover{ background:var(--brand-yellow-hover); }
+  .btn--primary:disabled{ opacity:.6; cursor:wait; }
+  .btn--ghost{
+    flex:0 0 auto;
+    background:transparent;
+    color:var(--text-dim);
+    border:1px solid var(--border);
+  }
+  .btn--ghost:hover{ color:var(--text); border-color:var(--text-dim); }
+
+  /* ---- Rodapé ---- */
+  .card__foot{
+    text-align:right;
+    padding:0 32px 20px;
+    font-size:12px; font-weight:600;
+    color:var(--accent);
+    letter-spacing:.3px;
+  }
+
+  /* ---- Toast ---- */
+  .toast{
+    position:fixed; bottom:24px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-left:4px solid var(--ok);
+    border-radius:var(--radius-sm);
+    padding:13px 18px; font-size:14px;
+    color:var(--text);
+    box-shadow:var(--shadow);
+    opacity:0; pointer-events:none;
+    transition:opacity .25s, transform .25s;
+    max-width:90vw;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.error{ border-left-color:var(--danger); }
+
+  @media (max-width:480px){
+    .card__head, form, .card__foot{ padding-left:18px; padding-right:18px; }
+    .actions{ flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+  <main class="card">
+    <header class="card__head">
+      <!-- LOGO oficial Ferreira Costa (PNG embutido em base64) -->
+      <div class="brand">
+        <img src="data:image/png;base64,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" alt="Ferreira Costa">
+      </div>
+      <h1>Solicitação de Serviço</h1>
+      <p>Preencha os dados da solicitação. Campos com <span style="color:var(--brand-red)">*</span> são obrigatórios.</p>
+    </header>
+
+    <form id="formPendencia" novalidate>
+
+      <div class="field" data-field="matricula">
+        <label for="matricula">Matrícula do Solicitante <span class="req">*</span></label>
+        <input type="text" id="matricula" name="matricula" inputmode="numeric" placeholder="Digite sua matrícula Ferreira Costa">
+        <div class="error-msg">Informe sua matrícula.</div>
+      </div>
+
+      <div class="field" data-field="regiao">
+        <label>Região (Filial) <span class="req">*</span></label>
+        <div class="select" id="select-regiao" data-placeholder="Selecione a filial">
+          <button type="button" class="select__control" data-empty="true" aria-haspopup="listbox" aria-expanded="false">Selecione a filial</button>
+          <div class="select__menu" role="listbox">
+            <input type="text" class="select__search" placeholder="Buscar...">
+            <div class="select__options"></div>
+          </div>
+        </div>
+        <div class="error-msg">Selecione a filial.</div>
+      </div>
+
+      <div class="field" data-field="local">
+        <label>Local <span class="req">*</span></label>
+        <div class="select" id="select-local" data-placeholder="Selecione o local">
+          <button type="button" class="select__control" data-empty="true" aria-haspopup="listbox" aria-expanded="false" disabled>Selecione a filial primeiro</button>
+          <div class="select__menu" role="listbox">
+            <input type="text" class="select__search" placeholder="Buscar...">
+            <div class="select__options"></div>
+          </div>
+        </div>
+        <div class="error-msg">Selecione o local.</div>
+      </div>
+
+      <div class="field" data-field="tipo_servico">
+        <label>O que precisa ser feito? <span class="req">*</span></label>
+        <div class="select" id="select-servico" data-placeholder="Selecione o serviço">
+          <button type="button" class="select__control" data-empty="true" aria-haspopup="listbox" aria-expanded="false">Selecione o serviço</button>
+          <div class="select__menu" role="listbox">
+            <input type="text" class="select__search" placeholder="Buscar...">
+            <div class="select__options"></div>
+          </div>
+        </div>
+        <div class="error-msg">Selecione o serviço.</div>
+      </div>
+
+      <div class="field" data-field="ponto_referencia">
+        <label for="ponto_referencia">Ponto de Referência Detalhado <span class="req">*</span></label>
+        <input type="text" id="ponto_referencia" name="ponto_referencia" placeholder="Ex: Próximo ao checkout 5, Corredor de Tintas...">
+        <div class="error-msg">Informe o ponto de referência.</div>
+      </div>
+
+      <div class="field" data-field="descricao">
+        <label for="descricao">Descrição Detalhada <span class="req">*</span></label>
+        <textarea id="descricao" name="descricao" placeholder="Detalhe de forma clara o problema observado..."></textarea>
+        <div class="error-msg">Descreva a pendência.</div>
+      </div>
+
+      <div class="field" data-field="responsavel">
+        <label>Executante<span class="req">*</span></label>
+        <div class="select" id="select-responsavel" data-placeholder="Selecione o responsável">
+          <button type="button" class="select__control" data-empty="true" aria-haspopup="listbox" aria-expanded="false">Selecione o responsável</button>
+          <div class="select__menu" role="listbox">
+            <input type="text" class="select__search" placeholder="Buscar...">
+            <div class="select__options"></div>
+          </div>
+        </div>
+        <div class="error-msg">Selecione o responsável.</div>
+      </div>
+
+      <div class="field" data-field="foto">
+        <label>Evidência Fotográfica (Opcional)</label>
+        <div class="upload">
+          <input type="file" id="foto" accept="image/png, image/jpeg, image/jpg">
+          <label class="upload__btn" for="foto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span id="uploadLabel">Anexar imagem (PNG, JPG, JPEG)</span>
+          </label>
+          <div class="upload__preview" id="uploadPreview">
+            <img id="previewImg" alt="Pré-visualização">
+            <span class="nome" id="previewNome"></span>
+            <button type="button" class="upload__remove" id="btnRemoverFoto">Remover</button>
+          </div>
+        </div>
+        <div class="error-msg">Arquivo inválido. Use PNG, JPG ou JPEG.</div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn--ghost" id="btnLimpar">Limpar</button>
+        <button type="button" class="btn btn--primary" id="btnEnviar">Enviar solicitação</button>
+      </div>
+    </form>
+
+    <div class="card__foot">PORTAL DO USUÁRIO</div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const CONFIG = {
+  WEBHOOK_URL: "https://n8n-fc-manutencao.ferreiracosta.com.br/webhook/criar-os-sgman",
+  ENVIO_ATIVO: true,
+
+  regioes: [
+    { regiao:"FILIAL GARANHUNS",   local:"FC - GUS/LOJA" },
+    { regiao:"FILIAL IMBIRIBEIRA",  local:"FC - IMB/LOJA" },
+    { regiao:"FILIAL PARALELA",     local:"FC - PAL/LOJA" },
+    { regiao:"FILIAL TAMARINEIRA",  local:"FC - TAM/LOJA" },
+    { regiao:"FILIAL ARACAJU",      local:"FC - AJU/LOJA" },
+    { regiao:"FILIAL JOÃO PESSOA",  local:"FC - JPA/LOJA" },
+    { regiao:"FILIAL PONTA NEGRA",  local:"FC - PNG/LOJA" },
+    { regiao:"FILIAL CARUARU",      local:"FC - CAU/LOJA" },
+    { regiao:"FILIAL BARRIS",       local:"FC - BAR/LOJA" },
+    { regiao:"CD CABO",             local:"FC - CBO/CENTRO DE DISTRIBUIÇÃO" }
+  ],
+
+  servicos: [
+    "Pintura/Retoque",
+    "Troca de Lâmpada Apagada",
+    "Nova Instalação Elétrica",
+    "Ajuste/Troca de Expositor",
+    "Solicitação de Serralharia",
+    "Solicitação de Marcenaria (Item de Loja/Mkt)"
+  ],
+
+  responsaveis: [
+    "eduardo.americo",
+    "GESTOR.MAN.PNG"
+  ],
+};
+
+const estado = { responsavel:null, regiao:null, local:null, servico:null, fotoBase64:null };
+
+function criarSelect(elId, onChange){
+  const root    = document.getElementById(elId);
+  const control = root.querySelector(".select__control");
+  const search   = root.querySelector(".select__search");
+  const optsBox  = root.querySelector(".select__options");
+  const placeholder = root.dataset.placeholder;
+
+  let options = [];
+  let value   = null;
+
+  function open(){
+    document.querySelectorAll(".select.is-open").forEach(s => s !== root && s.classList.remove("is-open"));
+    root.classList.add("is-open");
+    control.setAttribute("aria-expanded","true");
+    search.value = ""; render("");
+    setTimeout(() => search.focus(), 30);
+  }
+  function close(){
+    root.classList.remove("is-open");
+    control.setAttribute("aria-expanded","false");
+  }
+  function render(filtro){
+    const f = filtro.trim().toLowerCase();
+    const list = options.filter(o => o.toLowerCase().includes(f));
+    optsBox.innerHTML = "";
+    if(!list.length){ optsBox.innerHTML = `<div class="select__empty">Nenhum resultado.</div>`; return; }
+    list.forEach(o => {
+      const div = document.createElement("div");
+      div.className = "select__option" + (value === o ? " is-active" : "");
+      div.textContent = o;
+      div.setAttribute("role","option");
+      div.addEventListener("click", () => { pick(o); close(); });
+      optsBox.appendChild(div);
+    });
+  }
+  function pick(o){
+    value = o;
+    control.textContent = o;
+    control.dataset.empty = "false";
+    root.closest(".field").classList.remove("has-error");
+    if(typeof onChange === "function") onChange(o);
+  }
+
+  control.addEventListener("click", () => root.classList.contains("is-open") ? close() : open());
+  search.addEventListener("input", e => render(e.target.value));
+  search.addEventListener("keydown", e => { if(e.key === "Escape") close(); });
+
+  return {
+    setOptions(arr){ options = arr || []; },
+    clear(){ value=null; control.textContent=placeholder; control.dataset.empty="true"; },
+    enable(){ control.disabled=false; },
+    disable(msg){ control.disabled=true; control.textContent=msg||placeholder; control.dataset.empty="true"; },
+    getValue(){ return value; }
+  };
+}
+
+document.addEventListener("click", e => {
+  if(!e.target.closest(".select"))
+    document.querySelectorAll(".select.is-open").forEach(s => s.classList.remove("is-open"));
+});
+
+const selResponsavel = criarSelect("select-responsavel", respNome => { estado.responsavel = respNome; });
+const selLocal       = criarSelect("select-local",       loc => { estado.local = loc; });
+const selRegiao      = criarSelect("select-regiao",      reg => {
+  estado.regiao = reg;
+  estado.local = null;
+  selLocal.clear();
+  const item = CONFIG.regioes.find(r => r.regiao === reg);
+  selLocal.setOptions(item ? [item.local] : []);
+  selLocal.enable();
+});
+const selServico     = criarSelect("select-servico",     srv => { estado.servico = srv; });
+
+selResponsavel.setOptions(CONFIG.responsaveis);
+selRegiao.setOptions(CONFIG.regioes.map(r => r.regiao));
+selServico.setOptions(CONFIG.servicos);
+
+const inputFoto = document.getElementById("foto");
+const fieldFoto = document.querySelector('.field[data-field="foto"]');
+
+inputFoto.addEventListener("change", () => {
+  const file = inputFoto.files[0];
+  fieldFoto.classList.remove("has-error");
+  if(!file){ resetFoto(); return; }
+  const ok = ["image/png","image/jpeg","image/jpg"].includes(file.type);
+  if(!ok){ fieldFoto.classList.add("has-error"); resetFoto(); return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    estado.fotoBase64 = e.target.result;
+    document.getElementById("previewImg").src = e.target.result;
+    document.getElementById("previewNome").textContent = file.name;
+    document.getElementById("uploadPreview").style.display = "flex";
+    document.getElementById("uploadLabel").textContent = "Trocar imagem";
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById("btnRemoverFoto").addEventListener("click", resetFoto);
+
+function resetFoto(){
+  estado.fotoBase64 = null;
+  inputFoto.value = "";
+  document.getElementById("uploadPreview").style.display = "none";
+  document.getElementById("uploadLabel").textContent = "Anexar imagem (PNG, JPG, JPEG)";
+}
+
+function validar(){
+  let ok = true;
+  const marcar = (campo, valido) => {
+    const el = document.querySelector(`.field[data-field="${campo}"]`);
+    el.classList.toggle("has-error", !valido);
+    if(!valido) ok = false;
+  };
+
+  marcar("matricula",        document.getElementById("matricula").value.trim().length > 0);
+  marcar("responsavel",      !!estado.responsavel);
+  marcar("regiao",           !!estado.regiao);
+  marcar("local",            !!estado.local);
+  marcar("tipo_servico",     !!estado.servico);
+  marcar("ponto_referencia", document.getElementById("ponto_referencia").value.trim().length > 0);
+  marcar("descricao",        document.getElementById("descricao").value.trim().length > 0);
+  return ok;
+}
+
+function montarPayload(){
+  return {
+    matricula:        document.getElementById("matricula").value.trim(),
+    responsavel:      estado.responsavel,
+    regiao:           estado.regiao,
+    local:            estado.local,
+    tipo_servico:     estado.servico,
+    ponto_referencia: document.getElementById("ponto_referencia").value.trim(),
+    descricao:        document.getElementById("descricao").value.trim(),
+    foto_base64:      estado.fotoBase64
+  };
+}
+
+async function enviar(){
+  if(!validar()){ mostrarToast("Preencha os campos obrigatórios.", true); return; }
+  const payload = montarPayload();
+  const btn = document.getElementById("btnEnviar");
+
+  if(!CONFIG.ENVIO_ATIVO){
+    console.log("[SIMULAÇÃO] Payload:", payload);
+    mostrarToast("Modo simulação — payload no console.");
+    limpar();
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = "Enviando...";
+  try{
+    const resp = await fetch(CONFIG.WEBHOOK_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(payload)
+    });
+    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    mostrarToast("Solicitação enviada com sucesso.");
+    limpar();
+  }catch(err){
+    console.error(err);
+    mostrarToast("Falha no envio. Tente novamente.", true);
+  }finally{
+    btn.disabled = false; btn.textContent = "Enviar solicitação";
+  }
+}
+
+function limpar(){
+  estado.responsavel = estado.regiao = estado.local = estado.servico = null;
+  selResponsavel.clear();
+  selRegiao.clear();
+  selLocal.clear(); selLocal.disable("Selecione a filial primeiro");
+  selServico.clear();
+  document.getElementById("matricula").value = "";
+  document.getElementById("ponto_referencia").value = "";
+  document.getElementById("descricao").value = "";
+  resetFoto();
+  document.querySelectorAll(".field.has-error").forEach(f => f.classList.remove("has-error"));
+}
+
+let toastTimer;
+function mostrarToast(msg, erro=false){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.toggle("error", erro);
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+document.getElementById("btnEnviar").addEventListener("click", enviar);
+document.getElementById("btnLimpar").addEventListener("click", limpar);
+</script>
+</body>
+</html>
